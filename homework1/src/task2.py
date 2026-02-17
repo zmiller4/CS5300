@@ -24,3 +24,15 @@ def sample_values() -> Dict[str, Any]:
         "label": "hello",      # str
         "enabled": True,       # bool
     }
+
+def main() -> None:
+    values = sample_values()
+
+    print("Sample values:", values)
+    print("add_integers(2, 5) =", add_integers(2, 5))
+    print("divide_floats(10.0, 4.0) =", divide_floats(10.0, 4.0))
+    print('concat_strings("he", "llo") =', concat_strings("he", "llo"))
+    print("toggle_boolean(True) =", toggle_boolean(True))
+
+if __name__ == "__main__":
+    main()

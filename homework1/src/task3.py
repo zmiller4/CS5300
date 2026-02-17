@@ -56,3 +56,17 @@ def first_10_primes() -> List[int]:
 
 def sum_1_to_100() -> int:
     return sum_1_to_n(100)
+
+def main() -> None:
+    print("classify_number(-3) =", classify_number(-3))
+    print("classify_number(0)  =", classify_number(0))
+    print("classify_number(2.5) =", classify_number(2.5))
+
+    primes10 = first_10_primes()
+    print("first_10_primes() =", primes10)
+
+    total100 = sum_1_to_100()
+    print("sum_1_to_100() =", total100)
+
+if __name__ == "__main__":
+    main()

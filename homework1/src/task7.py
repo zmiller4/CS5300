@@ -4,12 +4,8 @@ GitHub REST API using httpx
 """
 
 from __future__ import annotations
-
 from dataclasses import dataclass
-from urllib.parse import urlparse
-
 import httpx
-
 
 @dataclass(frozen=True)
 class RepoInfo:
@@ -20,25 +16,11 @@ class RepoInfo:
     forks_count: int
     open_issues_count: int
 
+OWNER = "zmiller4"
+REPO = "CS5300"
 
-def parse_github_repo_url(url: str) -> tuple[str, str]:
-    p = urlparse(url)
-    if p.netloc not in {"github.com", "www.github.com"}:
-        raise ValueError("Not a github.com URL")
-
-    parts = [x for x in p.path.split("/") if x]
-    if len(parts) < 2:
-        raise ValueError("Repo URL must look like /owner/repo")
-
-    owner, repo = parts[0], parts[1]
-    if repo.endswith(".git"):
-        repo = repo[:-4]
-    return owner, repo
-
-
-def fetch_repo_info(url: str, client: httpx.Client | None = None) -> RepoInfo:
-    owner, repo = parse_github_repo_url(url)
-    api_url = f"https://api.github.com/repos/{owner}/{repo}"
+def fetch_repo_info(client: httpx.Client | None = None) -> RepoInfo:
+    api_url = f"https://api.github.com/repos/{OWNER}/{REPO}"
 
     c = client or httpx.Client(timeout=10.0, headers={"User-Agent": "cs5300-task7"})
     try:
@@ -58,7 +40,10 @@ def fetch_repo_info(url: str, client: httpx.Client | None = None) -> RepoInfo:
         open_issues_count=int(data["open_issues_count"]),
     )
 
+def main() -> None:
+    info = fetch_repo_info()
+    print(info)
+
 
 if __name__ == "__main__":
-    info = fetch_repo_info("https://github.com/zmiller4/CS5300")
-    print(info)
+    main()

@@ -25,3 +25,22 @@ def student_db() -> Dict[str, int]:
 
 def get_student_id(db: Dict[str, int], name: str) -> int | None:
     return db.get(name)
+
+def main() -> None:
+    books = favorite_books()
+    print("All favorite books:")
+    for title, author in books:
+        print(f"  - {title} by {author}")
+
+    print("\nFirst three books:")
+    for title, author in first_three_books(books):
+        print(f"  - {title} by {author}")
+
+    db = student_db()
+    print("\nStudent DB:", db)
+
+    for name in ["Jane Doe", "Not A Student"]:
+        print(f'get_student_id(db, "{name}") =', get_student_id(db, name))
+
+if __name__ == "__main__":
+    main()

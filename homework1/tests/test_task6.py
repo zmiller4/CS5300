@@ -8,7 +8,7 @@ from task6 import count_words_in_file, count_words_in_text
 
 
 def test_task6_read_me_word_count_is_104():
-    base = Path(__file__).resolve().parents[1]
+    base = Path(__file__).resolve().parent.parent
     file_path = base / "task6_read_me.txt"
     assert count_words_in_file(file_path) == 104
 
