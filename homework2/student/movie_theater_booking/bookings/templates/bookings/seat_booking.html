@@ -1,0 +1,44 @@
+{% extends 'bookings/base.html' %}
+{% block title %}Book Seats - {{ movie.title }}{% endblock %}
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'movie_list' %}" class="btn btn-outline-light btn-sm">&larr; Back to Movies</a>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <h2 class="card-title text-white">{{ movie.title }}</h2>
+        <p class="card-text">{{ movie.description }}</p>
+        <p class="text-muted">
+            Release Date: {{ movie.release_date }} | Duration: {{ movie.duration }} min
+        </p>
+    </div>
+</div>
+
+<h3 class="mb-3">Select a Seat</h3>
+
+<div class="row">
+    {% for seat in seats %}
+    <div class="col-md-3 col-sm-4 col-6 mb-3">
+        <div class="card text-center {% if seat.is_booked %}border-danger{% else %}border-success{% endif %}">
+            <div class="card-body">
+                <h5 class="card-title text-white">Seat {{ seat.seat_number }}</h5>
+                {% if seat.is_booked %}
+                <span class="badge bg-danger">Booked</span>
+                {% else %}
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="seat_id" value="{{ seat.id }}">
+                    <button type="submit" class="btn btn-success btn-sm">Book</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center">
+        <p class="text-muted">No seats available.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
