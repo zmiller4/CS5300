@@ -1,50 +1,266 @@
 {% extends 'bookings/base.html' %}
 {% block title %}Now Showing - Retro Future Cinema{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero banner */
+    .home-hero {
+        position: relative;
+        background: linear-gradient(135deg,
+            rgba(15, 52, 96, 0.5) 0%,
+            rgba(168, 85, 247, 0.15) 40%,
+            rgba(255, 45, 117, 0.2) 70%,
+            rgba(12, 10, 42, 0.8) 100%
+        );
+        border: 1px solid rgba(168, 85, 247, 0.25);
+        border-radius: 16px;
+        padding: 2.5rem 2rem 2rem;
+        margin-bottom: 2.5rem;
+        text-align: center;
+        overflow: hidden;
+    }
+
+    .home-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--neon-pink), var(--neon-purple), var(--neon-cyan));
+        opacity: 0.7;
+    }
+
+    .home-hero .hero-title {
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 900;
+        font-size: clamp(1.8rem, 5vw, 2.8rem);
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        background: linear-gradient(180deg, #fff 0%, #ff6b35 40%, #ff2d75 70%, #a855f7 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.25rem;
+        line-height: 1.2;
+    }
+
+    .home-hero .hero-sub {
+        font-family: 'Orbitron', sans-serif;
+        font-size: clamp(0.6rem, 1.8vw, 0.85rem);
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--neon-cyan);
+        text-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+        margin-bottom: 1.25rem;
+    }
+
+    .home-hero .hero-lines {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 1.5rem;
+    }
+
+    .home-hero .hero-line {
+        height: 1px;
+        width: 70px;
+        background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+    }
+
+    .home-hero .hero-line-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--neon-cyan);
+        box-shadow: 0 0 8px rgba(0, 212, 255, 0.6);
+    }
+
+    .now-showing-badge {
+        display: inline-block;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--neon-pink);
+        border: 1px solid rgba(255, 45, 117, 0.4);
+        border-radius: 20px;
+        padding: 0.4rem 1.5rem;
+        text-shadow: 0 0 8px rgba(255, 45, 117, 0.3);
+        margin-bottom: 0.5rem;
+    }
+
+    .hero-desc {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 1.05rem;
+        color: var(--text-light);
+        opacity: 0.7;
+        max-width: 500px;
+        margin: 0.75rem auto 0;
+    }
+
+    /* Movie cards */
+    .movie-card {
+        background: linear-gradient(160deg, rgba(15, 10, 50, 0.95) 0%, rgba(22, 15, 60, 0.9) 100%);
+        border: 1px solid rgba(168, 85, 247, 0.25);
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        position: relative;
+        transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+    }
+
+    .movie-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 25px rgba(168, 85, 247, 0.25), 0 0 40px rgba(168, 85, 247, 0.08);
+        border-color: rgba(168, 85, 247, 0.5);
+    }
+
+    .movie-card-accent {
+        height: 3px;
+        background: linear-gradient(90deg, var(--neon-pink), var(--neon-purple), var(--neon-cyan));
+    }
+
+    .movie-card-body {
+        padding: 1.5rem 1.5rem 1.25rem;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .movie-card-title {
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        font-size: 1.05rem;
+        letter-spacing: 1px;
+        color: #fff;
+        margin-bottom: 0.6rem;
+        line-height: 1.3;
+    }
+
+    .movie-card-desc {
+        color: var(--text-light);
+        opacity: 0.75;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        flex: 1;
+    }
+
+    .movie-card-meta {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 1.25rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid rgba(168, 85, 247, 0.15);
+    }
+
+    .movie-meta-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+
+    .movie-meta-label {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.5rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+    }
+
+    .movie-meta-value {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--neon-cyan);
+    }
+
+    .movie-meta-value.duration {
+        color: var(--neon-purple);
+    }
+
+    .btn-book {
+        background: linear-gradient(135deg, #ff2d75, #e91e63);
+        border: 1px solid rgba(255, 45, 117, 0.6);
+        color: #fff;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 0.65rem 1.5rem;
+        border-radius: 6px;
+        transition: all 0.3s;
+        text-align: center;
+        text-decoration: none;
+        display: block;
+    }
+
+    .btn-book:hover {
+        background: linear-gradient(135deg, #ff4d8d, #ff2d75);
+        box-shadow: 0 0 15px rgba(255, 45, 117, 0.4), 0 0 30px rgba(255, 45, 117, 0.15);
+        color: #fff;
+    }
+
+    /* Empty state */
+    .empty-movies {
+        background: linear-gradient(135deg, rgba(15, 10, 50, 0.7) 0%, rgba(22, 15, 60, 0.6) 100%);
+        border: 1px dashed rgba(168, 85, 247, 0.3);
+        border-radius: 12px;
+        padding: 3rem 2rem;
+        max-width: 480px;
+        margin: 0 auto;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="site-logo">
-    <h1>Retro Future</h1>
-    <div class="subtitle">Cinema</div>
-    <div class="logo-lines">
-        <span class="logo-line"></span>
-        <span class="logo-line"></span>
+<div class="home-hero">
+    <div class="hero-title">Retro Future</div>
+    <div class="hero-sub">Cinema</div>
+    <div class="hero-lines">
+        <span class="hero-line"></span>
+        <span class="hero-line-dot"></span>
+        <span class="hero-line"></span>
     </div>
+    <div class="now-showing-badge">Now Showing</div>
+    <p class="hero-desc">Browse our selection of movies and book your seats today.</p>
 </div>
 
-<div class="hero-section text-center text-white">
-    <h1 class="section-heading" style="font-size: clamp(1.2rem, 3vw, 1.8rem);">Now Showing</h1>
-    <p class="lead" style="font-family: 'Rajdhani', sans-serif; font-size: 1.1rem; opacity: 0.8;">
-        Browse our selection of movies and book your seats today!
-    </p>
-</div>
-
-<div class="row">
+<div class="row g-4">
     {% for movie in movies %}
-    <div class="col-lg-4 col-md-6 mb-4">
-        <div class="retro-card h-100 p-4 d-flex flex-column">
-            <h5 style="font-family: 'Orbitron', sans-serif; font-weight: 700; color: #fff; font-size: 1rem;">
-                {{ movie.title }}
-            </h5>
-            <p class="mt-2 mb-3" style="color: var(--text-light); opacity: 0.8; font-size: 0.95rem;">
-                {{ movie.description|truncatewords:25 }}
-            </p>
-            <div class="mt-auto mb-3">
-                <small class="neon-cyan" style="font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 1px;">
-                    RELEASE: {{ movie.release_date }}
-                </small><br>
-                <small class="neon-purple" style="font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 1px;">
-                    DURATION: {{ movie.duration }} MIN
-                </small>
+    <div class="col-lg-4 col-md-6">
+        <div class="movie-card">
+            <div class="movie-card-accent"></div>
+            <div class="movie-card-body">
+                <div class="movie-card-title">{{ movie.title }}</div>
+                <div class="movie-card-desc">{{ movie.description|truncatewords:25 }}</div>
+                <div class="movie-card-meta">
+                    <div class="movie-meta-item">
+                        <span class="movie-meta-label">Release</span>
+                        <span class="movie-meta-value">{{ movie.release_date|date:"M d, Y" }}</span>
+                    </div>
+                    <div class="movie-meta-item">
+                        <span class="movie-meta-label">Duration</span>
+                        <span class="movie-meta-value duration">{{ movie.duration }} min</span>
+                    </div>
+                </div>
+                <a href="{% url 'book_seat' movie.id %}" class="btn-book">Book Now</a>
             </div>
-            <a href="{% url 'book_seat' movie.id %}" class="btn btn-neon-pink mt-auto w-100">
-                Book Now
-            </a>
         </div>
     </div>
     {% empty %}
-    <div class="col-12 text-center py-5">
-        <p style="color: var(--text-muted); font-family: 'Orbitron', sans-serif; font-size: 0.85rem; letter-spacing: 1px;">
-            No movies available at the moment. Check back later!
-        </p>
+    <div class="col-12">
+        <div class="text-center empty-movies">
+            <p style="color: var(--text-muted); font-family: 'Orbitron', sans-serif; font-size: 0.8rem; letter-spacing: 1px;">
+                No movies available at the moment. Check back later!
+            </p>
+        </div>
     </div>
     {% endfor %}
 </div>
