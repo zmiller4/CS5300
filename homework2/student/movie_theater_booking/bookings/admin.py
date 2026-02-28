@@ -10,8 +10,8 @@ class MovieAdmin(admin.ModelAdmin):
 
 @admin.register(Seat)
 class SeatAdmin(admin.ModelAdmin):
-    list_display = ('seat_number', 'is_booked')
-    list_filter = ('is_booked',)
+    list_display = ('seat_number', 'row', 'number')
+    list_filter = ('row',)
 
 
 @admin.register(Booking)

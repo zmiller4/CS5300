@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout, authenticate
@@ -5,7 +6,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
 from rest_framework import viewsets, status, serializers as drf_serializers
 from rest_framework.response import Response
-from .models import Movie, Seat, Booking
+from .models import Movie, Seat, Booking, THEATER_LAYOUT
 from .serializers import MovieSerializer, SeatSerializer, BookingSerializer
 
 
@@ -30,10 +31,9 @@ class BookingViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         seat = serializer.validated_data['seat']
-        if seat.is_booked:
-            raise drf_serializers.ValidationError({'seat': 'This seat is already booked.'})
-        seat.is_booked = True
-        seat.save()
+        movie = serializer.validated_data['movie']
+        if Booking.objects.filter(movie=movie, seat=seat).exists():
+            raise drf_serializers.ValidationError({'seat': 'This seat is already booked for this movie.'})
         serializer.save(user=self.request.user)
 
 
@@ -49,22 +49,66 @@ def movie_list(request):
 def seat_booking(request, movie_id):
     """Display available seats for a movie and handle booking."""
     movie = get_object_or_404(Movie, pk=movie_id)
-    seats = Seat.objects.all()
 
     if request.method == 'POST':
-        seat_id = request.POST.get('seat_id')
-        seat = get_object_or_404(Seat, pk=seat_id)
-
-        if seat.is_booked:
-            messages.error(request, 'This seat is already booked.')
+        seat_ids = request.POST.getlist('seat_ids')
+        if not seat_ids:
+            messages.error(request, 'Please select at least one seat.')
         else:
-            Booking.objects.create(movie=movie, seat=seat, user=request.user)
-            seat.is_booked = True
-            seat.save()
-            messages.success(request, f'Successfully booked Seat {seat.seat_number} for {movie.title}!')
-            return redirect('booking_history')
+            booked_count = 0
+            already_booked = []
+            for seat_id in seat_ids:
+                seat = get_object_or_404(Seat, pk=seat_id)
+                if Booking.objects.filter(movie=movie, seat=seat).exists():
+                    already_booked.append(seat.seat_number)
+                else:
+                    Booking.objects.create(movie=movie, seat=seat, user=request.user)
+                    booked_count += 1
+            if booked_count:
+                messages.success(request, f'Successfully booked {booked_count} seat(s) for {movie.title}!')
+                return redirect('booking_history')
+            if already_booked:
+                messages.error(request, f'Seat(s) {", ".join(already_booked)} already booked.')
 
-    return render(request, 'bookings/seat_booking.html', {'movie': movie, 'seats': seats})
+    # Build seat data grouped by row
+    seats = Seat.objects.all().order_by('row', 'number')
+    booked_seat_ids = set(
+        Booking.objects.filter(movie=movie).values_list('seat_id', flat=True)
+    )
+
+    seat_rows = []
+    current_row = None
+    current_seats = []
+    for seat in seats:
+        if seat.row != current_row:
+            if current_row is not None:
+                seat_rows.append((current_row, current_seats))
+            current_row = seat.row
+            current_seats = []
+        current_seats.append({
+            'id': seat.id,
+            'seat_number': seat.seat_number,
+            'number': seat.number,
+            'is_booked': seat.id in booked_seat_ids,
+        })
+    if current_row is not None:
+        seat_rows.append((current_row, current_seats))
+
+    # JSON for JavaScript
+    seat_data_json = json.dumps([
+        {
+            'row': row,
+            'seats': seats_list,
+        }
+        for row, seats_list in seat_rows
+    ])
+
+    return render(request, 'bookings/seat_booking.html', {
+        'movie': movie,
+        'seat_rows': seat_rows,
+        'seat_data_json': seat_data_json,
+        'max_seats': max(THEATER_LAYOUT.values()),
+    })
 
 
 @login_required

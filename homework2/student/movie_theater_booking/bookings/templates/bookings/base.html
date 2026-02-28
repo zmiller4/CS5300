@@ -3,131 +3,442 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Movie Theater Booking{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-          rel="stylesheet">
+    <title>{% block title %}Retro Future Cinema{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-deep: #07051a;
+            --bg-dark: #0c0a2a;
+            --bg-card: rgba(12, 10, 42, 0.9);
+            --neon-pink: #ff2d75;
+            --neon-cyan: #00d4ff;
+            --neon-purple: #a855f7;
+            --neon-blue: #3b82f6;
+            --neon-yellow: #fbbf24;
+            --text-light: #e8e6f0;
+            --text-muted: #8888aa;
+            --glow-pink: 0 0 10px rgba(255, 45, 117, 0.5), 0 0 30px rgba(255, 45, 117, 0.2);
+            --glow-cyan: 0 0 10px rgba(0, 212, 255, 0.5), 0 0 30px rgba(0, 212, 255, 0.2);
+            --glow-purple: 0 0 10px rgba(168, 85, 247, 0.5), 0 0 30px rgba(168, 85, 247, 0.2);
+        }
+
+        * { box-sizing: border-box; }
+
         body {
-            background-color: #1a1a2e;
-            color: #e0e0e0;
+            background: var(--bg-deep);
+            color: var(--text-light);
+            font-family: 'Rajdhani', 'Segoe UI', sans-serif;
             min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
         }
+
+        /* Star field background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(1px 1px at 10% 10%, rgba(255,255,255,0.8), transparent),
+                radial-gradient(1px 1px at 20% 60%, rgba(255,255,255,0.6), transparent),
+                radial-gradient(1px 1px at 35% 25%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1px 1px at 50% 80%, rgba(255,255,255,0.5), transparent),
+                radial-gradient(1px 1px at 65% 15%, rgba(255,255,255,0.9), transparent),
+                radial-gradient(1px 1px at 75% 45%, rgba(255,255,255,0.4), transparent),
+                radial-gradient(1px 1px at 85% 70%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1px 1px at 95% 35%, rgba(255,255,255,0.6), transparent),
+                radial-gradient(1px 1px at 5% 90%, rgba(255,255,255,0.5), transparent),
+                radial-gradient(1px 1px at 40% 50%, rgba(255,255,255,0.3), transparent),
+                radial-gradient(1.5px 1.5px at 15% 40%, rgba(200,200,255,0.9), transparent),
+                radial-gradient(1.5px 1.5px at 55% 5%, rgba(200,200,255,0.8), transparent),
+                radial-gradient(1.5px 1.5px at 80% 90%, rgba(200,200,255,0.6), transparent),
+                radial-gradient(1px 1px at 25% 75%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1px 1px at 70% 30%, rgba(255,255,255,0.5), transparent),
+                radial-gradient(1px 1px at 90% 55%, rgba(255,255,255,0.6), transparent),
+                radial-gradient(1px 1px at 45% 95%, rgba(255,255,255,0.4), transparent),
+                radial-gradient(1px 1px at 60% 40%, rgba(255,255,255,0.8), transparent),
+                radial-gradient(1px 1px at 30% 85%, rgba(255,255,255,0.5), transparent),
+                radial-gradient(1px 1px at 8% 55%, rgba(255,255,255,0.7), transparent);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Horizon glow */
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background: linear-gradient(
+                to top,
+                rgba(255, 100, 50, 0.15) 0%,
+                rgba(255, 45, 117, 0.08) 30%,
+                transparent 100%
+            );
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .page-wrapper {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Navbar */
         .navbar {
-            background-color: #16213e !important;
+            background: linear-gradient(180deg, rgba(12, 10, 42, 0.95) 0%, rgba(12, 10, 42, 0.8) 100%) !important;
+            border-bottom: 1px solid rgba(168, 85, 247, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 0.5rem 0;
         }
-        .navbar-brand, .nav-link {
-            color: #e94560 !important;
+
+        .navbar-brand {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(180deg, #ff6b35, #ff2d75, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
+
+        .nav-link {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--neon-cyan) !important;
+            transition: all 0.3s;
+        }
+
         .nav-link:hover {
-            color: #ff6b81 !important;
+            color: #fff !important;
+            text-shadow: var(--glow-cyan);
         }
-        .card {
-            background-color: #16213e;
-            border: 1px solid #0f3460;
-            transition: transform 0.2s;
+
+        /* Logo / Brand Title */
+        .site-logo {
+            text-align: center;
+            padding: 1.5rem 0 0.5rem;
         }
-        .card:hover {
-            transform: translateY(-5px);
+
+        .site-logo h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            background: linear-gradient(180deg, #fff 0%, #ff6b35 30%, #ff2d75 60%, #e94560 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0;
+            line-height: 1.2;
         }
-        .btn-primary {
-            background-color: #e94560;
-            border-color: #e94560;
+
+        .site-logo .subtitle {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(0.6rem, 2vw, 0.9rem);
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            color: var(--neon-cyan);
+            text-shadow: var(--glow-cyan);
         }
-        .btn-primary:hover {
-            background-color: #c81e45;
-            border-color: #c81e45;
+
+        .site-logo .logo-lines {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 4px;
         }
-        .btn-success {
-            background-color: #0f3460;
-            border-color: #0f3460;
+
+        .site-logo .logo-line {
+            height: 2px;
+            width: 80px;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
         }
-        .btn-success:hover {
-            background-color: #1a4a7a;
-            border-color: #1a4a7a;
+
+        /* Card styling */
+        .retro-card {
+            background: linear-gradient(135deg, rgba(15, 10, 50, 0.9) 0%, rgba(20, 15, 60, 0.9) 100%);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 8px;
+            transition: transform 0.3s, box-shadow 0.3s;
         }
-        .list-group-item {
-            background-color: #16213e;
-            border-color: #0f3460;
-            color: #e0e0e0;
+
+        .retro-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 20px rgba(168, 85, 247, 0.2);
+            border-color: rgba(168, 85, 247, 0.6);
         }
-        .alert-success {
-            background-color: #0f3460;
-            border-color: #1a4a7a;
-            color: #e0e0e0;
+
+        /* Buttons */
+        .btn-neon-pink {
+            background: linear-gradient(135deg, #ff2d75, #e91e63);
+            border: 1px solid #ff2d75;
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 0.5rem 1.5rem;
+            transition: all 0.3s;
         }
-        .alert-danger {
-            background-color: #5c1a2a;
-            border-color: #e94560;
-            color: #e0e0e0;
+
+        .btn-neon-pink:hover {
+            background: linear-gradient(135deg, #ff4d8d, #ff2d75);
+            box-shadow: var(--glow-pink);
+            color: #fff;
         }
+
+        .btn-neon-outline {
+            background: transparent;
+            border: 1px solid var(--neon-purple);
+            color: var(--neon-purple);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 0.5rem 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .btn-neon-outline:hover {
+            background: rgba(168, 85, 247, 0.15);
+            box-shadow: var(--glow-purple);
+            color: #fff;
+        }
+
+        .btn-neon-cyan {
+            background: linear-gradient(135deg, #00b4d8, #00d4ff);
+            border: 1px solid #00d4ff;
+            color: #000;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 0.5rem 1.5rem;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+
+        .btn-neon-cyan:hover {
+            box-shadow: var(--glow-cyan);
+            color: #000;
+        }
+
+        /* Section headings */
+        .section-heading {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #fff;
+            text-align: center;
+        }
+
+        .section-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 0.5rem 0 1.5rem;
+        }
+
+        .section-divider .line {
+            height: 1px;
+            width: 60px;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+        }
+
+        /* Hero section */
         .hero-section {
-            background: linear-gradient(135deg, #0f3460 0%, #e94560 100%);
+            background: linear-gradient(135deg, rgba(15, 52, 96, 0.6) 0%, rgba(168, 85, 247, 0.2) 50%, rgba(255, 45, 117, 0.3) 100%);
+            border: 1px solid rgba(168, 85, 247, 0.3);
             padding: 2rem;
             border-radius: 10px;
             margin-bottom: 2rem;
+            text-align: center;
         }
+
+        .hero-section h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+        }
+
+        /* Alerts */
+        .alert-success {
+            background: rgba(0, 212, 255, 0.15);
+            border-color: rgba(0, 212, 255, 0.4);
+            color: var(--neon-cyan);
+        }
+
+        .alert-danger, .alert-error {
+            background: rgba(255, 45, 117, 0.15);
+            border-color: rgba(255, 45, 117, 0.4);
+            color: var(--neon-pink);
+        }
+
+        /* Tables */
+        .table-retro {
+            color: var(--text-light);
+        }
+
+        .table-retro thead th {
+            background: rgba(168, 85, 247, 0.2);
+            border-bottom: 2px solid var(--neon-purple);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .table-retro tbody tr {
+            border-bottom: 1px solid rgba(168, 85, 247, 0.15);
+        }
+
+        .table-retro tbody tr:hover {
+            background: rgba(168, 85, 247, 0.08);
+        }
+
+        /* Form controls */
+        .form-control {
+            background: rgba(15, 10, 50, 0.8);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            color: var(--text-light);
+        }
+
+        .form-control:focus {
+            background: rgba(15, 10, 50, 0.9);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 0 0.2rem rgba(0, 212, 255, 0.15);
+            color: var(--text-light);
+        }
+
+        .form-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--neon-cyan);
+        }
+
+        .form-text {
+            color: var(--text-muted);
+        }
+
+        /* Footer */
         footer {
-            background-color: #16213e;
+            background: rgba(12, 10, 42, 0.9);
+            border-top: 1px solid rgba(168, 85, 247, 0.2);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* Grid floor effect for seat page */
+        .grid-floor {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 35%;
+            background:
+                linear-gradient(rgba(255, 45, 117, 0.12) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 45, 117, 0.12) 1px, transparent 1px);
+            background-size: 60px 40px;
+            transform: perspective(400px) rotateX(45deg);
+            transform-origin: bottom center;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Neon text utility */
+        .neon-pink { color: var(--neon-pink); }
+        .neon-cyan { color: var(--neon-cyan); }
+        .neon-purple { color: var(--neon-purple); }
+        .neon-yellow { color: var(--neon-yellow); }
+
+        .text-glow-pink { text-shadow: var(--glow-pink); }
+        .text-glow-cyan { text-shadow: var(--glow-cyan); }
+        .text-glow-purple { text-shadow: var(--glow-purple); }
+
+        /* Responsive adjustments */
+        @media (max-width: 576px) {
+            .navbar-brand { font-size: 0.9rem; }
+            .site-logo h1 { font-size: 1.4rem; }
         }
     </style>
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="{% url 'movie_list' %}">Movie Theater</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'movie_list' %}">Movies</a>
-                    </li>
-                    {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'booking_history' %}">My Bookings</a>
-                    </li>
-                    {% endif %}
-                </ul>
-                <ul class="navbar-nav">
-                    {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <span class="nav-link">Hello, {{ user.username }}</span>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
-                    </li>
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'register' %}">Register</a>
-                    </li>
-                    {% endif %}
-                </ul>
+    <div class="page-wrapper">
+        <nav class="navbar navbar-expand-lg navbar-dark mb-3">
+            <div class="container">
+                <a class="navbar-brand" href="{% url 'movie_list' %}">Retro Future Cinema</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'movie_list' %}">Movies</a>
+                        </li>
+                        {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'booking_history' %}">My Bookings</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                    <ul class="navbar-nav">
+                        {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <span class="nav-link neon-yellow">{{ user.username }}</span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">Register</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
             </div>
-        </div>
-    </nav>
+        </nav>
 
-    <div class="container">
-        {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        {% endfor %}
-        {% endif %}
+        <div class="container">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
 
-        {% block content %}{% endblock %}
+            {% block content %}{% endblock %}
+        </div>
+
+        <footer class="text-center py-3 mt-5">
+            <p class="mb-0">Retro Future Cinema &copy; 2025</p>
+        </footer>
     </div>
 
-    <footer class="text-center py-3 mt-5">
-        <p class="mb-0">&copy; 2025 Movie Theater Booking App</p>
-    </footer>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

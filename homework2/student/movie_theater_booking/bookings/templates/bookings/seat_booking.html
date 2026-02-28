@@ -1,44 +1,505 @@
 {% extends 'bookings/base.html' %}
-{% block title %}Book Seats - {{ movie.title }}{% endblock %}
+{% block title %}Select Seats - {{ movie.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Seat booking page specific styles */
+    .theater-wrapper {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 0 10px;
+    }
+
+    /* Movie title display */
+    .movie-header {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .movie-header h2 {
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 900;
+        font-size: clamp(1.2rem, 4vw, 2rem);
+        background: linear-gradient(180deg, #fbbf24, #ff6b35, #ff2d75);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.25rem;
+    }
+
+    .movie-header .showtime {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 1rem;
+        color: var(--text-light);
+        opacity: 0.8;
+    }
+
+    /* Select Your Seats heading */
+    .seats-heading {
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        font-size: clamp(0.75rem, 2.5vw, 1rem);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: #fff;
+        text-align: center;
+        margin: 1rem 0 0.5rem;
+    }
+
+    .heading-divider {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 1rem;
+    }
+
+    .heading-divider .hline {
+        height: 1px;
+        width: 50px;
+        background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+    }
+
+    /* Screen indicator */
+    .screen-container {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .screen-label {
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        font-size: 0.7rem;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: #fff;
+        margin-bottom: 6px;
+    }
+
+    .screen-curve {
+        width: 85%;
+        max-width: 500px;
+        height: 30px;
+        margin: 0 auto;
+        border-bottom: 3px solid;
+        border-image: linear-gradient(90deg, transparent, var(--neon-pink), var(--neon-cyan), var(--neon-pink), transparent) 1;
+        border-radius: 0 0 50% 50%;
+        position: relative;
+    }
+
+    .screen-curve::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 10%;
+        width: 80%;
+        height: 8px;
+        background: radial-gradient(ellipse at center, rgba(0, 212, 255, 0.3) 0%, transparent 70%);
+    }
+
+    /* Seat grid */
+    .seat-grid {
+        margin-bottom: 1rem;
+    }
+
+    .seat-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 4px;
+    }
+
+    .row-label {
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        font-size: clamp(0.6rem, 1.5vw, 0.85rem);
+        color: var(--neon-yellow);
+        text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+        width: 24px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .seats-in-row {
+        display: flex;
+        justify-content: center;
+        gap: 3px;
+        flex: 1;
+    }
+
+    .seat {
+        width: clamp(18px, 3.5vw, 30px);
+        height: clamp(18px, 3.5vw, 30px);
+        border-radius: 4px 4px 6px 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+    }
+
+    /* Front rows (A, B, C) - purple/violet */
+    .seat.front-row {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        box-shadow: 0 2px 4px rgba(124, 58, 237, 0.3);
+    }
+
+    .seat.front-row:hover:not(.booked) {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+        transform: scale(1.1);
+    }
+
+    /* Back rows (D-H) - cyan/blue */
+    .seat.back-row {
+        background: linear-gradient(135deg, #0891b2, #06b6d4);
+        box-shadow: 0 2px 4px rgba(6, 182, 212, 0.3);
+    }
+
+    .seat.back-row:hover:not(.booked) {
+        background: linear-gradient(135deg, #22d3ee, #06b6d4);
+        box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
+        transform: scale(1.1);
+    }
+
+    /* Selected state */
+    .seat.selected {
+        background: linear-gradient(135deg, #ec4899, #f43f5e) !important;
+        box-shadow: 0 0 12px rgba(236, 72, 153, 0.6) !important;
+        transform: scale(1.1);
+        border-color: #fff;
+    }
+
+    /* Booked/Reserved state */
+    .seat.booked {
+        background: linear-gradient(135deg, #3b1f6e, #2d1854) !important;
+        box-shadow: none !important;
+        cursor: not-allowed;
+        opacity: 0.7;
+        border-color: rgba(59, 31, 110, 0.5);
+    }
+
+    /* Back of theater label */
+    .back-label {
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        font-size: 0.65rem;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.5);
+        text-align: center;
+        margin: 1rem 0;
+    }
+
+    /* Legend */
+    .legend {
+        display: flex;
+        justify-content: center;
+        gap: clamp(15px, 4vw, 30px);
+        margin: 1rem 0 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .legend-swatch {
+        width: 18px;
+        height: 18px;
+        border-radius: 3px;
+    }
+
+    .legend-swatch.available-front {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    }
+
+    .legend-swatch.available-back {
+        background: linear-gradient(135deg, #0891b2, #06b6d4);
+    }
+
+    .legend-swatch.selected-swatch {
+        background: linear-gradient(135deg, #ec4899, #f43f5e);
+    }
+
+    .legend-swatch.reserved-swatch {
+        background: linear-gradient(135deg, #3b1f6e, #2d1854);
+    }
+
+    /* Action buttons */
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin: 1.5rem 0;
+    }
+
+    .btn-go-back {
+        background: transparent;
+        border: 2px solid var(--neon-purple);
+        color: var(--text-light);
+        font-family: 'Orbitron', sans-serif;
+        font-size: clamp(0.65rem, 1.8vw, 0.8rem);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 0.6rem 1.5rem;
+        border-radius: 4px;
+        transition: all 0.3s;
+        text-decoration: none;
+    }
+
+    .btn-go-back:hover {
+        background: rgba(168, 85, 247, 0.15);
+        box-shadow: var(--glow-purple);
+        color: #fff;
+    }
+
+    .btn-continue {
+        background: linear-gradient(135deg, rgba(255, 45, 117, 0.8), rgba(168, 85, 247, 0.8));
+        border: 2px solid;
+        border-image: linear-gradient(135deg, var(--neon-pink), var(--neon-cyan)) 1;
+        color: #fff;
+        font-family: 'Orbitron', sans-serif;
+        font-size: clamp(0.65rem, 1.8vw, 0.8rem);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 0.6rem 2rem;
+        border-radius: 0;
+        transition: all 0.3s;
+        font-weight: 700;
+    }
+
+    .btn-continue:hover {
+        box-shadow: 0 0 15px rgba(255, 45, 117, 0.4), 0 0 30px rgba(0, 212, 255, 0.2);
+        color: #fff;
+    }
+
+    .btn-continue:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    /* Selection count badge */
+    .selection-info {
+        text-align: center;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        color: var(--neon-cyan);
+        margin-bottom: 0.5rem;
+        min-height: 1.2rem;
+    }
+
+    /* Grid floor on this page */
+    .booking-grid-floor {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 30%;
+        background:
+            linear-gradient(rgba(255, 45, 117, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 45, 117, 0.1) 1px, transparent 1px);
+        background-size: 50px 30px;
+        transform: perspective(300px) rotateX(50deg);
+        transform-origin: bottom center;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    /* Responsive */
+    @media (min-width: 768px) {
+        .seat {
+            width: 32px;
+            height: 32px;
+        }
+        .seats-in-row {
+            gap: 4px;
+        }
+        .seat-row {
+            margin-bottom: 5px;
+        }
+        .row-label {
+            width: 30px;
+            font-size: 0.9rem;
+        }
+    }
+
+    @media (min-width: 992px) {
+        .theater-wrapper {
+            max-width: 800px;
+        }
+        .seat {
+            width: 36px;
+            height: 36px;
+        }
+        .seats-in-row {
+            gap: 5px;
+        }
+    }
+
+    @media (max-width: 400px) {
+        .seat {
+            width: 16px;
+            height: 16px;
+            border-radius: 2px 2px 4px 4px;
+        }
+        .seats-in-row {
+            gap: 2px;
+        }
+        .row-label {
+            width: 18px;
+            font-size: 0.55rem;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="mb-4">
-    <a href="{% url 'movie_list' %}" class="btn btn-outline-light btn-sm">&larr; Back to Movies</a>
-</div>
+<div class="booking-grid-floor"></div>
 
-<div class="card shadow mb-4">
-    <div class="card-body">
-        <h2 class="card-title text-white">{{ movie.title }}</h2>
-        <p class="card-text">{{ movie.description }}</p>
-        <p class="text-muted">
-            Release Date: {{ movie.release_date }} | Duration: {{ movie.duration }} min
-        </p>
-    </div>
-</div>
-
-<h3 class="mb-3">Select a Seat</h3>
-
-<div class="row">
-    {% for seat in seats %}
-    <div class="col-md-3 col-sm-4 col-6 mb-3">
-        <div class="card text-center {% if seat.is_booked %}border-danger{% else %}border-success{% endif %}">
-            <div class="card-body">
-                <h5 class="card-title text-white">Seat {{ seat.seat_number }}</h5>
-                {% if seat.is_booked %}
-                <span class="badge bg-danger">Booked</span>
-                {% else %}
-                <form method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="seat_id" value="{{ seat.id }}">
-                    <button type="submit" class="btn btn-success btn-sm">Book</button>
-                </form>
-                {% endif %}
-            </div>
+<div class="theater-wrapper">
+    <!-- Site Logo -->
+    <div class="site-logo">
+        <h1>Retro Future</h1>
+        <div class="subtitle">Cinema</div>
+        <div class="logo-lines">
+            <span class="logo-line"></span>
+            <span class="logo-line"></span>
         </div>
     </div>
-    {% empty %}
-    <div class="col-12 text-center">
-        <p class="text-muted">No seats available.</p>
+
+    <!-- Movie Info -->
+    <div class="movie-header">
+        <h2>{{ movie.title }}</h2>
+        <div class="showtime">{{ movie.release_date|date:"l" }}, {{ movie.duration }} min</div>
     </div>
-    {% endfor %}
+
+    <!-- Select Your Seats -->
+    <div class="seats-heading">Select Your Seats</div>
+    <div class="heading-divider">
+        <span class="hline"></span>
+        <span class="hline"></span>
+    </div>
+
+    <!-- Screen -->
+    <div class="screen-container">
+        <div class="screen-label">Screen</div>
+        <div class="screen-curve"></div>
+    </div>
+
+    <!-- Seat Grid -->
+    <form method="post" id="booking-form">
+        {% csrf_token %}
+
+        <div class="seat-grid" id="seat-grid">
+            {% for row_letter, seats_list in seat_rows %}
+            <div class="seat-row">
+                <span class="row-label">{{ row_letter }}</span>
+                <div class="seats-in-row">
+                    {% for seat in seats_list %}
+                    <div class="seat {% if row_letter <= 'C' %}front-row{% else %}back-row{% endif %} {% if seat.is_booked %}booked{% endif %}"
+                         data-seat-id="{{ seat.id }}"
+                         data-seat-number="{{ seat.seat_number }}"
+                         {% if seat.is_booked %}title="Reserved"{% else %}title="Seat {{ seat.seat_number }}"{% endif %}>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Back of Theater -->
+        <div class="back-label">Back of Theater</div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-swatch available-back"></span>
+                <span>Available</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-swatch selected-swatch"></span>
+                <span class="neon-pink">Selected</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-swatch reserved-swatch"></span>
+                <span>Reserved</span>
+            </div>
+        </div>
+
+        <!-- Selection info -->
+        <div class="selection-info" id="selection-info"></div>
+
+        <!-- Hidden inputs for selected seats -->
+        <div id="hidden-inputs"></div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="{% url 'movie_list' %}" class="btn-go-back">Go Back</a>
+            <button type="submit" class="btn-continue" id="continue-btn" disabled>Continue</button>
+        </div>
+    </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    const selectedSeats = new Set();
+    const seatGrid = document.getElementById('seat-grid');
+    const hiddenInputs = document.getElementById('hidden-inputs');
+    const continueBtn = document.getElementById('continue-btn');
+    const selectionInfo = document.getElementById('selection-info');
+
+    seatGrid.addEventListener('click', function(e) {
+        const seat = e.target.closest('.seat');
+        if (!seat || seat.classList.contains('booked')) return;
+
+        const seatId = seat.dataset.seatId;
+        const seatNumber = seat.dataset.seatNumber;
+
+        if (selectedSeats.has(seatId)) {
+            selectedSeats.delete(seatId);
+            seat.classList.remove('selected');
+        } else {
+            selectedSeats.add(seatId);
+            seat.classList.add('selected');
+        }
+
+        updateUI();
+    });
+
+    function updateUI() {
+        // Update hidden inputs
+        hiddenInputs.innerHTML = '';
+        selectedSeats.forEach(function(id) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'seat_ids';
+            input.value = id;
+            hiddenInputs.appendChild(input);
+        });
+
+        // Update button state
+        continueBtn.disabled = selectedSeats.size === 0;
+
+        // Update selection info
+        if (selectedSeats.size > 0) {
+            const seatNames = [];
+            selectedSeats.forEach(function(id) {
+                const el = document.querySelector('[data-seat-id="' + id + '"]');
+                if (el) seatNames.push(el.dataset.seatNumber);
+            });
+            selectionInfo.textContent = seatNames.length + ' seat(s) selected: ' + seatNames.join(', ');
+        } else {
+            selectionInfo.textContent = '';
+        }
+    }
+})();
+</script>
 {% endblock %}

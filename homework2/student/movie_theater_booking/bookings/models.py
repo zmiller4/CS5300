@@ -2,6 +2,19 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+# Standard theater layout: rows A-H with varying seat counts
+THEATER_LAYOUT = {
+    'A': 12,
+    'B': 14,
+    'C': 14,
+    'D': 16,
+    'E': 16,
+    'F': 16,
+    'G': 16,
+    'H': 16,
+}
+
+
 class Movie(models.Model):
     """Represents a movie available for booking."""
     title = models.CharField(max_length=200)
@@ -16,7 +29,11 @@ class Movie(models.Model):
 class Seat(models.Model):
     """Represents a seat in the theater."""
     seat_number = models.CharField(max_length=10, unique=True)
-    is_booked = models.BooleanField(default=False)
+    row = models.CharField(max_length=1, default='A')
+    number = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        ordering = ['row', 'number']
 
     def __str__(self):
         return f"Seat {self.seat_number}"

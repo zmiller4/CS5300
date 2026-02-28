@@ -1,31 +1,50 @@
 {% extends 'bookings/base.html' %}
-{% block title %}Movie List{% endblock %}
+{% block title %}Now Showing - Retro Future Cinema{% endblock %}
 {% block content %}
+<div class="site-logo">
+    <h1>Retro Future</h1>
+    <div class="subtitle">Cinema</div>
+    <div class="logo-lines">
+        <span class="logo-line"></span>
+        <span class="logo-line"></span>
+    </div>
+</div>
+
 <div class="hero-section text-center text-white">
-    <h1>Now Showing</h1>
-    <p class="lead">Browse our selection of movies and book your seats today!</p>
+    <h1 class="section-heading" style="font-size: clamp(1.2rem, 3vw, 1.8rem);">Now Showing</h1>
+    <p class="lead" style="font-family: 'Rajdhani', sans-serif; font-size: 1.1rem; opacity: 0.8;">
+        Browse our selection of movies and book your seats today!
+    </p>
 </div>
 
 <div class="row">
     {% for movie in movies %}
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow">
-            <div class="card-body d-flex flex-column">
-                <h5 class="card-title text-white">{{ movie.title }}</h5>
-                <p class="card-text text-light">{{ movie.description|truncatewords:25 }}</p>
-                <ul class="list-unstyled mt-auto mb-3">
-                    <li><small class="text-muted">Release: {{ movie.release_date }}</small></li>
-                    <li><small class="text-muted">Duration: {{ movie.duration }} min</small></li>
-                </ul>
-                <a href="{% url 'book_seat' movie.id %}" class="btn btn-primary mt-auto">
-                    Book Now
-                </a>
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="retro-card h-100 p-4 d-flex flex-column">
+            <h5 style="font-family: 'Orbitron', sans-serif; font-weight: 700; color: #fff; font-size: 1rem;">
+                {{ movie.title }}
+            </h5>
+            <p class="mt-2 mb-3" style="color: var(--text-light); opacity: 0.8; font-size: 0.95rem;">
+                {{ movie.description|truncatewords:25 }}
+            </p>
+            <div class="mt-auto mb-3">
+                <small class="neon-cyan" style="font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 1px;">
+                    RELEASE: {{ movie.release_date }}
+                </small><br>
+                <small class="neon-purple" style="font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 1px;">
+                    DURATION: {{ movie.duration }} MIN
+                </small>
             </div>
+            <a href="{% url 'book_seat' movie.id %}" class="btn btn-neon-pink mt-auto w-100">
+                Book Now
+            </a>
         </div>
     </div>
     {% empty %}
-    <div class="col-12 text-center">
-        <p class="text-muted">No movies available at the moment. Check back later!</p>
+    <div class="col-12 text-center py-5">
+        <p style="color: var(--text-muted); font-family: 'Orbitron', sans-serif; font-size: 0.85rem; letter-spacing: 1px;">
+            No movies available at the moment. Check back later!
+        </p>
     </div>
     {% endfor %}
 </div>

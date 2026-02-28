@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from datetime import date
-from .models import Movie, Seat, Booking
+from .models import Movie, Seat, Booking, THEATER_LAYOUT
 
 
 # ─── Model Unit Tests ────────────────────────────────────────────────────────────
@@ -35,22 +35,32 @@ class MovieModelTest(TestCase):
 class SeatModelTest(TestCase):
     """Unit tests for the Seat model."""
 
-    def setUp(self):
-        self.seat = Seat.objects.create(seat_number='A1')
+    def test_seats_are_prepopulated(self):
+        """Test that the standard theater seats exist from migration."""
+        total_expected = sum(THEATER_LAYOUT.values())
+        self.assertEqual(Seat.objects.count(), total_expected)
 
-    def test_seat_creation(self):
-        """Test that a seat is created with default booking status."""
-        self.assertEqual(self.seat.seat_number, 'A1')
-        self.assertFalse(self.seat.is_booked)
+    def test_seat_rows_exist(self):
+        """Test that all rows A-H exist."""
+        for row in THEATER_LAYOUT:
+            count = Seat.objects.filter(row=row).count()
+            self.assertEqual(count, THEATER_LAYOUT[row])
 
     def test_seat_str(self):
         """Test the string representation of a seat."""
-        self.assertEqual(str(self.seat), 'Seat A1')
+        seat = Seat.objects.get(seat_number='A1')
+        self.assertEqual(str(seat), 'Seat A1')
 
     def test_seat_unique_number(self):
         """Test that seat numbers must be unique."""
         with self.assertRaises(Exception):
-            Seat.objects.create(seat_number='A1')
+            Seat.objects.create(seat_number='A1', row='A', number=1)
+
+    def test_seat_ordering(self):
+        """Test that seats are ordered by row then number."""
+        seats = list(Seat.objects.all())
+        self.assertEqual(seats[0].seat_number, 'A1')
+        self.assertEqual(seats[-1].seat_number, 'H16')
 
 
 class BookingModelTest(TestCase):
@@ -64,7 +74,7 @@ class BookingModelTest(TestCase):
             release_date=date(2025, 1, 1),
             duration=90
         )
-        self.seat = Seat.objects.create(seat_number='B2')
+        self.seat = Seat.objects.get(seat_number='B2')
         self.booking = Booking.objects.create(
             movie=self.movie,
             seat=self.seat,
@@ -168,39 +178,27 @@ class SeatAPITest(APITestCase):
         self.client = APIClient()
         self.user = User.objects.create_user(username='apiuser', password='testpass123')
         self.client.force_authenticate(user=self.user)
-        self.seat = Seat.objects.create(seat_number='C3')
 
     def test_list_seats(self):
         """Test listing all seats via API."""
         response = self.client.get(reverse('seat-list'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-
-    def test_create_seat(self):
-        """Test creating a seat via API."""
-        data = {'seat_number': 'D4', 'is_booked': False}
-        response = self.client.post(reverse('seat-list'), data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Seat.objects.count(), 2)
+        total_expected = sum(THEATER_LAYOUT.values())
+        self.assertEqual(len(response.data), total_expected)
 
     def test_retrieve_seat(self):
         """Test retrieving a single seat via API."""
-        response = self.client.get(reverse('seat-detail', args=[self.seat.id]))
+        seat = Seat.objects.get(seat_number='C3')
+        response = self.client.get(reverse('seat-detail', args=[seat.id]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['seat_number'], 'C3')
-        self.assertFalse(response.data['is_booked'])
 
-    def test_seat_availability(self):
-        """Test checking seat availability via API."""
-        response = self.client.get(reverse('seat-list'))
-        available = [s for s in response.data if not s['is_booked']]
-        self.assertEqual(len(available), 1)
-
-    def test_create_duplicate_seat(self):
-        """Test creating a seat with duplicate number returns error."""
-        data = {'seat_number': 'C3', 'is_booked': False}
-        response = self.client.post(reverse('seat-list'), data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    def test_seat_has_row_and_number(self):
+        """Test that seats have row and number fields."""
+        seat = Seat.objects.get(seat_number='D5')
+        response = self.client.get(reverse('seat-detail', args=[seat.id]))
+        self.assertEqual(response.data['row'], 'D')
+        self.assertEqual(response.data['number'], 5)
 
 
 class BookingAPITest(APITestCase):
@@ -216,7 +214,7 @@ class BookingAPITest(APITestCase):
             release_date='2025-03-01',
             duration=110
         )
-        self.seat = Seat.objects.create(seat_number='E5')
+        self.seat = Seat.objects.get(seat_number='E5')
 
     def test_create_booking(self):
         """Test creating a booking via API."""
@@ -224,14 +222,10 @@ class BookingAPITest(APITestCase):
         response = self.client.post(reverse('booking-list'), data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Booking.objects.count(), 1)
-        # Verify the seat is now marked as booked
-        self.seat.refresh_from_db()
-        self.assertTrue(self.seat.is_booked)
 
     def test_create_booking_already_booked_seat(self):
         """Test booking an already booked seat returns error."""
-        self.seat.is_booked = True
-        self.seat.save()
+        Booking.objects.create(movie=self.movie, seat=self.seat, user=self.user)
         data = {'movie': self.movie.id, 'seat': self.seat.id}
         response = self.client.post(reverse('booking-list'), data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -305,7 +299,7 @@ class SeatBookingViewTest(TestCase):
             release_date=date(2025, 4, 15),
             duration=100
         )
-        self.seat = Seat.objects.create(seat_number='F6')
+        self.seat = Seat.objects.get(seat_number='F6')
 
     def test_seat_booking_page_loads(self):
         """Test that the seat booking page loads for authenticated users."""
@@ -323,23 +317,30 @@ class SeatBookingViewTest(TestCase):
         """Test booking a seat through the form."""
         response = self.client.post(
             reverse('book_seat', args=[self.movie.id]),
-            {'seat_id': self.seat.id}
+            {'seat_ids': [self.seat.id]}
         )
         self.assertEqual(response.status_code, 302)  # Redirect to history
-        self.seat.refresh_from_db()
-        self.assertTrue(self.seat.is_booked)
         self.assertEqual(Booking.objects.count(), 1)
+
+    def test_seat_booking_multiple_seats(self):
+        """Test booking multiple seats at once."""
+        seat2 = Seat.objects.get(seat_number='F7')
+        response = self.client.post(
+            reverse('book_seat', args=[self.movie.id]),
+            {'seat_ids': [self.seat.id, seat2.id]}
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Booking.objects.count(), 2)
 
     def test_seat_booking_already_booked(self):
         """Test booking an already booked seat shows error."""
-        self.seat.is_booked = True
-        self.seat.save()
+        Booking.objects.create(movie=self.movie, seat=self.seat, user=self.user)
         response = self.client.post(
             reverse('book_seat', args=[self.movie.id]),
-            {'seat_id': self.seat.id}
+            {'seat_ids': [self.seat.id]}
         )
         self.assertEqual(response.status_code, 200)  # Stays on page
-        self.assertEqual(Booking.objects.count(), 0)
+        self.assertEqual(Booking.objects.count(), 1)  # No new booking
 
     def test_seat_booking_invalid_movie(self):
         """Test booking with non-existent movie returns 404."""
@@ -360,7 +361,7 @@ class BookingHistoryViewTest(TestCase):
             release_date=date(2025, 7, 1),
             duration=85
         )
-        self.seat = Seat.objects.create(seat_number='G7')
+        self.seat = Seat.objects.get(seat_number='G7')
 
     def test_booking_history_page_loads(self):
         """Test that the booking history page loads for authenticated users."""
