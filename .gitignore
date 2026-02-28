@@ -144,6 +144,8 @@ myenv/
 ENV/
 env.bak/
 venv.bak/
+# Ignore python venv in homework2/student/venv_hw2/
+homework2/student/venv_hw2/
 
 # Spyder project settings
 .spyderproject
