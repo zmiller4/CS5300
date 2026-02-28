@@ -210,3 +210,6 @@ __marimo__/
 #code-server
 .config/
 .local/
+# Ignore tmpclaude-* files
+tmpclaude-*
+
