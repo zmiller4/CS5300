@@ -16,6 +16,7 @@ class SeatSerializer(serializers.ModelSerializer):
 
 class BookingSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)
+    seats = serializers.PrimaryKeyRelatedField(many=True, queryset=Seat.objects.all())
 
     class Meta:
         model = Booking

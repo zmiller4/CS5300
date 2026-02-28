@@ -30,10 +30,11 @@ class BookingViewSet(viewsets.ModelViewSet):
     serializer_class = BookingSerializer
 
     def perform_create(self, serializer):
-        seat = serializer.validated_data['seat']
+        seats = serializer.validated_data.get('seats', [])
         movie = serializer.validated_data['movie']
-        if Booking.objects.filter(movie=movie, seat=seat).exists():
-            raise drf_serializers.ValidationError({'seat': 'This seat is already booked for this movie.'})
+        for seat in seats:
+            if Booking.objects.filter(movie=movie, seats=seat).exists():
+                raise drf_serializers.ValidationError({'seats': f'Seat {seat.seat_number} is already booked for this movie.'})
         serializer.save(user=self.request.user)
 
 
@@ -55,17 +56,18 @@ def seat_booking(request, movie_id):
         if not seat_ids:
             messages.error(request, 'Please select at least one seat.')
         else:
-            booked_count = 0
             already_booked = []
+            seats_to_book = []
             for seat_id in seat_ids:
                 seat = get_object_or_404(Seat, pk=seat_id)
-                if Booking.objects.filter(movie=movie, seat=seat).exists():
+                if Booking.objects.filter(movie=movie, seats=seat).exists():
                     already_booked.append(seat.seat_number)
                 else:
-                    Booking.objects.create(movie=movie, seat=seat, user=request.user)
-                    booked_count += 1
-            if booked_count:
-                messages.success(request, f'Successfully booked {booked_count} seat(s) for {movie.title}!')
+                    seats_to_book.append(seat)
+            if seats_to_book:
+                booking = Booking.objects.create(movie=movie, user=request.user)
+                booking.seats.set(seats_to_book)
+                messages.success(request, f'Successfully booked {len(seats_to_book)} seat(s) for {movie.title}!')
                 return redirect('booking_history')
             if already_booked:
                 messages.error(request, f'Seat(s) {", ".join(already_booked)} already booked.')
@@ -73,7 +75,7 @@ def seat_booking(request, movie_id):
     # Build seat data grouped by row
     seats = Seat.objects.all().order_by('row', 'number')
     booked_seat_ids = set(
-        Booking.objects.filter(movie=movie).values_list('seat_id', flat=True)
+        Booking.objects.filter(movie=movie).values_list('seats__id', flat=True)
     )
 
     seat_rows = []
@@ -114,7 +116,7 @@ def seat_booking(request, movie_id):
 @login_required
 def booking_history(request):
     """Display the booking history for the logged-in user."""
-    bookings = Booking.objects.filter(user=request.user).select_related('movie', 'seat')
+    bookings = Booking.objects.filter(user=request.user).select_related('movie').prefetch_related('seats')
     return render(request, 'bookings/booking_history.html', {'bookings': bookings})
 
 

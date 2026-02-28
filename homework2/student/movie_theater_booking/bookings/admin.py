@@ -16,5 +16,9 @@ class SeatAdmin(admin.ModelAdmin):
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ('movie', 'seat', 'user', 'booking_date')
+    list_display = ('movie', 'get_seats', 'user', 'booking_date')
     list_filter = ('movie', 'booking_date')
+
+    def get_seats(self, obj):
+        return ', '.join(s.seat_number for s in obj.seats.all())
+    get_seats.short_description = 'Seats'

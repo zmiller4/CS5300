@@ -40,14 +40,12 @@ class Seat(models.Model):
 
 
 class Booking(models.Model):
-    """Represents a booking linking a user, movie, and seat."""
+    """Represents a booking linking a user, movie, and one or more seats."""
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='bookings')
-    seat = models.ForeignKey(Seat, on_delete=models.CASCADE, related_name='bookings')
+    seats = models.ManyToManyField(Seat, related_name='bookings')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')
     booking_date = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        unique_together = ('movie', 'seat')
-
     def __str__(self):
-        return f"{self.user.username} - {self.movie.title} - Seat {self.seat.seat_number}"
+        seat_numbers = ', '.join(s.seat_number for s in self.seats.all())
+        return f"{self.user.username} - {self.movie.title} - Seats {seat_numbers}"

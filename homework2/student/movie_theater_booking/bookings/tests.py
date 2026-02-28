@@ -77,30 +77,21 @@ class BookingModelTest(TestCase):
         self.seat = Seat.objects.get(seat_number='B2')
         self.booking = Booking.objects.create(
             movie=self.movie,
-            seat=self.seat,
             user=self.user
         )
+        self.booking.seats.set([self.seat])
 
     def test_booking_creation(self):
         """Test that a booking is created with correct relationships."""
         self.assertEqual(self.booking.movie, self.movie)
-        self.assertEqual(self.booking.seat, self.seat)
+        self.assertIn(self.seat, self.booking.seats.all())
         self.assertEqual(self.booking.user, self.user)
         self.assertIsNotNone(self.booking.booking_date)
 
     def test_booking_str(self):
         """Test the string representation of a booking."""
-        expected = 'testuser - Test Movie - Seat B2'
+        expected = 'testuser - Test Movie - Seats B2'
         self.assertEqual(str(self.booking), expected)
-
-    def test_booking_unique_together(self):
-        """Test that a movie-seat combination must be unique."""
-        with self.assertRaises(Exception):
-            Booking.objects.create(
-                movie=self.movie,
-                seat=self.seat,
-                user=self.user
-            )
 
 
 # ─── API Integration Tests ──────────────────────────────────────────────────────
@@ -218,36 +209,39 @@ class BookingAPITest(APITestCase):
 
     def test_create_booking(self):
         """Test creating a booking via API."""
-        data = {'movie': self.movie.id, 'seat': self.seat.id}
-        response = self.client.post(reverse('booking-list'), data)
+        data = {'movie': self.movie.id, 'seats': [self.seat.id]}
+        response = self.client.post(reverse('booking-list'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Booking.objects.count(), 1)
 
     def test_create_booking_already_booked_seat(self):
         """Test booking an already booked seat returns error."""
-        Booking.objects.create(movie=self.movie, seat=self.seat, user=self.user)
-        data = {'movie': self.movie.id, 'seat': self.seat.id}
-        response = self.client.post(reverse('booking-list'), data)
+        booking = Booking.objects.create(movie=self.movie, user=self.user)
+        booking.seats.set([self.seat])
+        data = {'movie': self.movie.id, 'seats': [self.seat.id]}
+        response = self.client.post(reverse('booking-list'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_list_bookings(self):
         """Test listing bookings via API."""
-        Booking.objects.create(movie=self.movie, seat=self.seat, user=self.user)
+        booking = Booking.objects.create(movie=self.movie, user=self.user)
+        booking.seats.set([self.seat])
         response = self.client.get(reverse('booking-list'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
 
     def test_retrieve_booking(self):
         """Test retrieving a single booking via API."""
-        booking = Booking.objects.create(movie=self.movie, seat=self.seat, user=self.user)
+        booking = Booking.objects.create(movie=self.movie, user=self.user)
+        booking.seats.set([self.seat])
         response = self.client.get(reverse('booking-detail', args=[booking.id]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['movie'], self.movie.id)
 
     def test_booking_sets_user_automatically(self):
         """Test that the booking user is set to the authenticated user."""
-        data = {'movie': self.movie.id, 'seat': self.seat.id}
-        response = self.client.post(reverse('booking-list'), data)
+        data = {'movie': self.movie.id, 'seats': [self.seat.id]}
+        response = self.client.post(reverse('booking-list'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         booking = Booking.objects.first()
         self.assertEqual(booking.user, self.user)
@@ -323,18 +317,21 @@ class SeatBookingViewTest(TestCase):
         self.assertEqual(Booking.objects.count(), 1)
 
     def test_seat_booking_multiple_seats(self):
-        """Test booking multiple seats at once."""
+        """Test booking multiple seats at once creates a single booking."""
         seat2 = Seat.objects.get(seat_number='F7')
         response = self.client.post(
             reverse('book_seat', args=[self.movie.id]),
             {'seat_ids': [self.seat.id, seat2.id]}
         )
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(Booking.objects.count(), 2)
+        self.assertEqual(Booking.objects.count(), 1)
+        booking = Booking.objects.first()
+        self.assertEqual(booking.seats.count(), 2)
 
     def test_seat_booking_already_booked(self):
         """Test booking an already booked seat shows error."""
-        Booking.objects.create(movie=self.movie, seat=self.seat, user=self.user)
+        booking = Booking.objects.create(movie=self.movie, user=self.user)
+        booking.seats.set([self.seat])
         response = self.client.post(
             reverse('book_seat', args=[self.movie.id]),
             {'seat_ids': [self.seat.id]}
@@ -377,7 +374,8 @@ class BookingHistoryViewTest(TestCase):
 
     def test_booking_history_shows_user_bookings(self):
         """Test that only the logged-in user's bookings are shown."""
-        Booking.objects.create(movie=self.movie, seat=self.seat, user=self.user)
+        booking = Booking.objects.create(movie=self.movie, user=self.user)
+        booking.seats.set([self.seat])
         response = self.client.get(reverse('booking_history'))
         self.assertContains(response, 'History Movie')
 
@@ -389,7 +387,8 @@ class BookingHistoryViewTest(TestCase):
     def test_booking_history_excludes_other_users(self):
         """Test that other users' bookings are not shown."""
         other_user = User.objects.create_user(username='other', password='testpass123')
-        Booking.objects.create(movie=self.movie, seat=self.seat, user=other_user)
+        booking = Booking.objects.create(movie=self.movie, user=other_user)
+        booking.seats.set([self.seat])
         response = self.client.get(reverse('booking_history'))
         self.assertNotContains(response, 'History Movie')
 
