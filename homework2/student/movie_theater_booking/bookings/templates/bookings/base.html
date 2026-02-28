@@ -92,36 +92,120 @@
 
         /* Navbar */
         .navbar {
-            background: linear-gradient(180deg, rgba(12, 10, 42, 0.95) 0%, rgba(12, 10, 42, 0.8) 100%) !important;
-            border-bottom: 1px solid rgba(168, 85, 247, 0.3);
-            backdrop-filter: blur(10px);
-            padding: 0.5rem 0;
+            background: linear-gradient(180deg, rgba(12, 10, 42, 0.98) 0%, rgba(12, 10, 42, 0.92) 100%) !important;
+            border-bottom: none;
+            backdrop-filter: blur(12px);
+            padding: 0.6rem 0;
+            position: relative;
+        }
+
+        /* Glowing accent line under navbar */
+        .navbar::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                var(--neon-pink) 15%,
+                var(--neon-purple) 40%,
+                var(--neon-cyan) 65%,
+                transparent 100%
+            );
+            opacity: 0.8;
+        }
+
+        /* Subtle glow beneath the line */
+        .navbar::before {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 10%;
+            right: 10%;
+            height: 8px;
+            background: linear-gradient(90deg,
+                transparent,
+                rgba(168, 85, 247, 0.3),
+                rgba(0, 212, 255, 0.2),
+                transparent
+            );
+            filter: blur(4px);
+            z-index: -1;
         }
 
         .navbar-brand {
             font-family: 'Orbitron', sans-serif;
             font-weight: 900;
-            font-size: 1.1rem;
-            letter-spacing: 2px;
+            font-size: 1.15rem;
+            letter-spacing: 3px;
             text-transform: uppercase;
-            background: linear-gradient(180deg, #ff6b35, #ff2d75, #a855f7);
+            background: linear-gradient(135deg, #ff6b35, #ff2d75, #a855f7);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            transition: filter 0.3s;
+            padding-top: 0.4rem;
+            padding-bottom: 0.4rem;
+        }
+
+        .navbar-brand:hover {
+            filter: brightness(1.2);
         }
 
         .nav-link {
             font-family: 'Orbitron', sans-serif;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
+            font-size: 0.72rem;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
-            color: var(--neon-cyan) !important;
+            color: var(--text-light) !important;
             transition: all 0.3s;
+            position: relative;
+            padding: 0.5rem 0.85rem !important;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--neon-cyan);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+            border-radius: 1px;
+            box-shadow: 0 0 6px rgba(0, 212, 255, 0.4);
         }
 
         .nav-link:hover {
-            color: #fff !important;
-            text-shadow: var(--glow-cyan);
+            color: var(--neon-cyan) !important;
+            text-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
+        }
+
+        .nav-link:hover::after {
+            width: 60%;
+        }
+
+        /* Hamburger toggler styling */
+        .navbar-toggler {
+            border: 1px solid rgba(168, 85, 247, 0.4) !important;
+            padding: 0.35rem 0.6rem;
+            transition: all 0.3s;
+        }
+
+        .navbar-toggler:hover {
+            border-color: var(--neon-cyan) !important;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+        }
+
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2);
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 212, 255, 0.85)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
         }
 
         /* Logo / Brand Title */
@@ -380,6 +464,10 @@
         .nav-user-label:hover {
             color: var(--neon-yellow) !important;
             text-shadow: none;
+        }
+
+        .nav-user-label::after {
+            display: none !important;
         }
 
         /* Mobile menu username header */
