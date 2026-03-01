@@ -141,7 +141,7 @@
             font-size: 1.15rem;
             letter-spacing: 3px;
             text-transform: uppercase;
-            background: linear-gradient(135deg, #ff6b35, #ff2d75, #a855f7);
+            background: linear-gradient(180deg, #fff 0%, #ff6b35 40%, #ff2d75 70%, #a855f7 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -152,6 +152,16 @@
 
         .navbar-brand:hover {
             filter: brightness(1.2);
+        }
+
+        .navbar-brand .brand-sub {
+            font-size: 0.55rem;
+            font-weight: 400;
+            letter-spacing: 5px;
+            background: none;
+            -webkit-text-fill-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
         }
 
         .nav-link {
@@ -495,7 +505,7 @@
     <div class="page-wrapper">
         <nav class="navbar navbar-expand-lg navbar-dark mb-3">
             <div class="container">
-                <a class="navbar-brand" href="{% url 'movie_list' %}">Retro Future Cinema</a>
+                <a class="navbar-brand" href="{% url 'movie_list' %}">Retro Future <span class="brand-sub">Cinema</span></a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                         data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
