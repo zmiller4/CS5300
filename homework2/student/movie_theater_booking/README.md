@@ -93,13 +93,21 @@ movie_theater_booking/
 
 ## Running Tests
 
+### Unit and Integration Tests
+
 ```bash
 python manage.py test bookings
 ```
 
-For test coverage:
+### BDD Tests (Behave)
+
 ```bash
-pip install coverage
+python manage.py behave
+```
+
+### Test Coverage
+
+```bash
 coverage run manage.py test bookings
 coverage report
 ```
@@ -119,3 +127,34 @@ coverage report
 - **Frontend**: Bootstrap 5.3, Django Templates
 - **Database**: SQLite (development)
 - **Deployment**: Render with Gunicorn and WhiteNoise
+
+## Deployment
+
+This application is deployed on Render. The deployment configuration includes:
+
+- `Procfile` - Gunicorn web server configuration
+- `build.sh` - Build script for installing dependencies, collecting static files, and running migrations
+- `runtime.txt` - Python version specification
+- `whitenoise` - Static file serving in production
+
+### Render Environment Variables
+
+Set the following environment variables in Render:
+
+| Variable | Description |
+|---|---|
+| `SECRET_KEY` | A secure random secret key |
+| `DEBUG` | Set to `False` for production |
+| `ALLOWED_HOSTS` | Your Render domain (e.g., `your-app.onrender.com`) |
+
+## AI Usage Citation
+
+This project utilized AI assistance (Claude by Anthropic) in the following ways:
+
+- **Code generation**: AI was used to help generate boilerplate code for Django models, serializers, views, and URL routing.
+- **Test writing**: AI assisted in writing unit tests, integration tests, and Behave BDD test scenarios.
+- **UI development**: AI helped create Bootstrap-styled templates with a retro-futuristic design theme.
+- **Debugging**: AI was used to troubleshoot errors during development.
+- **Documentation**: AI assisted in writing this README and code comments.
+
+All AI-generated content was directed, reviewed, tested, and adapted to fit the project requirements by Zach Miller.
