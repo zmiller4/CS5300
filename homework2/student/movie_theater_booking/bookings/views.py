@@ -35,7 +35,8 @@ class BookingViewSet(viewsets.ModelViewSet):
         for seat in seats:
             if Booking.objects.filter(movie=movie, seats=seat).exists():
                 raise drf_serializers.ValidationError({'seats': f'Seat {seat.seat_number} is already booked for this movie.'})
-        serializer.save(user=self.request.user)
+        booking = serializer.save(user=self.request.user)
+        Seat.objects.filter(id__in=[s.id for s in seats]).update(is_booked=True)
 
 
 # ─── Template Views ─────────────────────────────────────────────────────────────
@@ -67,6 +68,7 @@ def seat_booking(request, movie_id):
             if seats_to_book:
                 booking = Booking.objects.create(movie=movie, user=request.user)
                 booking.seats.set(seats_to_book)
+                Seat.objects.filter(id__in=[s.id for s in seats_to_book]).update(is_booked=True)
                 messages.success(request, f'Successfully booked {len(seats_to_book)} seat(s) for {movie.title}!')
                 return redirect('booking_history')
             if already_booked:

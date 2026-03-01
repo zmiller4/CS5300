@@ -31,6 +31,7 @@ class Seat(models.Model):
     seat_number = models.CharField(max_length=10, unique=True)
     row = models.CharField(max_length=1, default='A')
     number = models.PositiveIntegerField(default=1)
+    is_booked = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['row', 'number']

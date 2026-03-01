@@ -62,6 +62,11 @@ class SeatModelTest(TestCase):
         self.assertEqual(seats[0].seat_number, 'A1')
         self.assertEqual(seats[-1].seat_number, 'H16')
 
+    def test_seat_default_is_booked(self):
+        """Test that seats default to not booked."""
+        seat = Seat.objects.get(seat_number='A1')
+        self.assertFalse(seat.is_booked)
+
 
 class BookingModelTest(TestCase):
     """Unit tests for the Booking model."""
@@ -343,6 +348,15 @@ class SeatBookingViewTest(TestCase):
         """Test booking with non-existent movie returns 404."""
         response = self.client.get(reverse('book_seat', args=[9999]))
         self.assertEqual(response.status_code, 404)
+
+    def test_seat_marked_as_booked_after_booking(self):
+        """Test that seat is_booked field is set to True after booking."""
+        self.client.post(
+            reverse('book_seat', args=[self.movie.id]),
+            {'seat_ids': [self.seat.id]}
+        )
+        self.seat.refresh_from_db()
+        self.assertTrue(self.seat.is_booked)
 
 
 class BookingHistoryViewTest(TestCase):
