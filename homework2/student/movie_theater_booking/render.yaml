@@ -9,6 +9,7 @@ services:
     plan: free
     name: movie-theater-booking
     runtime: python
+    rootDir: homework2/student/movie_theater_booking
     buildCommand: './build.sh'
     startCommand: 'gunicorn movie_theater_booking.wsgi:application'
     envVars:
