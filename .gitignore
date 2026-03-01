@@ -214,6 +214,8 @@ __marimo__/
 .local/
 # Ignore Django collected static files
 homework2/student/movie_theater_booking/staticfiles/
+# Ignore CLAUDE.md
+CLAUDE.md
 # Ignore tmpclaude-* files
 tmpclaude-*
 
